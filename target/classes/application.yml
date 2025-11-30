@@ -8,14 +8,14 @@ spring:
     username: root
     password: 123456
     # username和password指向数据库的用户名和密码
-  redis:
-    host: 127.0.0.1
-    port: 6379
-    password:
-    database: 0
   security:
     user:
       name: root
       password: 123456
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**Mapper.xml
+vuemanager:
+  jwt:
+    header: Authorization
+    expire: 604800
+    secret: 'fi8n3439n439n431d9ne9343fdfet49h'
