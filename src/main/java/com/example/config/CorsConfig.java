@@ -8,6 +8,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+//该类的作用主要是解决跨域问题
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 

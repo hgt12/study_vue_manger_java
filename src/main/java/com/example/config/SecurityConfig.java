@@ -1,11 +1,20 @@
 package com.example.config;
 
+import cn.hutool.json.JSONUtil;
+import com.example.commom.lang.Result;
+import com.example.security.CaptchaFilter;
+import com.example.security.LoginFailureHandler;
+import com.example.security.LoginSuccessHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.http.HttpServletResponse;
 
 //该类的作用
 //启用 Spring Security。
@@ -18,20 +27,32 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter
 {
+    @Autowired
+    LoginSuccessHandler loginSuccessHandler;
 
-    //白名单,这里定义了无需认证即可访问的接口路径（白名单）。比如登录接口、验证码接口、网站图标等。
+    @Autowired
+    LoginFailureHandler loginFailureHandler;
+
+    @Autowired
+    CaptchaFilter captchaFilter;
+
+    //白名单,这里定义了无需认证即可访问的接口路径（白名单）。比如验证码接口、网站图标等。
+    //注意：/login 不需要放在白名单中，因为 formLogin() 会自动处理 /login 请求
     private static final String[] AUTH_WHITELIST = {
-            "/login",
-            "/logout",
             "/captcha",
             "/favicon.ico",
     };
 
     protected void configure(HttpSecurity http) throws Exception
     {
-        http.csrf().and().csrf().disable()
+        http.cors()
+                .and()
+                .csrf().disable()
                 //登录配置
                 .formLogin()
+                //.loginProcessingUrl("/login")  // 明确指定登录处理URL
+                .successHandler(loginSuccessHandler)
+                .failureHandler(loginFailureHandler)
 
                 //禁用session
                 .and()
@@ -44,10 +65,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(AUTH_WHITELIST).permitAll()
                 .anyRequest().authenticated()
 
-                //异常处理
-
-
                 //配置自定义的过滤器
+
+                //异常处理 - 配置认证异常和权限异常的处理
+                .and()
+                .exceptionHandling()
+                .authenticationEntryPoint((request, response, authException) -> {
+                    // 处理未认证的请求（返回JSON格式）
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write(JSONUtil.toJsonStr(Result.fail("未登录或登录已过期")));
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    // 处理权限不足的请求（返回JSON格式）
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write(JSONUtil.toJsonStr(Result.fail("权限不足")));
+                })
+
+                .and()
+                .addFilterBefore(captchaFilter, UsernamePasswordAuthenticationFilter.class);
         ;
 
 

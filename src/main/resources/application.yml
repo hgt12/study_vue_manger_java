@@ -8,6 +8,11 @@ spring:
     username: root
     password: 123456
     # username和password指向数据库的用户名和密码
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password:
+    database: 0
   security:
     user:
       name: root

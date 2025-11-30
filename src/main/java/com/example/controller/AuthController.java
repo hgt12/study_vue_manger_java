@@ -4,6 +4,7 @@ import cn.hutool.core.map.MapUtil;
 import com.example.commom.lang.Const;
 import com.example.commom.lang.Result;
 import com.google.code.kaptcha.Producer;
+import com.example.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,9 @@ public class AuthController extends BaseController{
 
     @Autowired
     Producer producer ;
+
+    @Autowired
+    RedisUtil redisUtil;
 
     //将验证码文本（code）存储到 Redis 的哈希表（Hash）中，并设置 120 秒的过期时间
     @GetMapping("/captcha")
