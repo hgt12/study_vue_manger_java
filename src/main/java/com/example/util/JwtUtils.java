@@ -45,9 +45,21 @@ public class JwtUtils {
     }
 
     //jwt是否过期
-    public boolean isTokenExpired(Claims claims)
+    public static boolean isTokenExpired(Claims claims)
     {
         return claims.getExpiration().before(new Date());
+    }
+
+    public Claims getClaimByToken(String jwt)
+    {
+        try {
+            return Jwts.parser()
+                    .setSigningKey(secret)
+                    .parseClaimsJws(jwt)
+                    .getBody();
+        }catch (Exception e){
+            return null;
+        }
     }
 }
 

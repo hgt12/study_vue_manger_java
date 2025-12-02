@@ -1,11 +1,10 @@
 package com.example.config;
 
 import cn.hutool.json.JSONUtil;
-import com.example.commom.lang.Result;
-import com.example.security.CaptchaFilter;
-import com.example.security.LoginFailureHandler;
-import com.example.security.LoginSuccessHandler;
+import com.example.common.lang.Result;
+import com.example.security.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -36,6 +35,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 
     @Autowired
     CaptchaFilter captchaFilter;
+
+    @Autowired
+    JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
+        return new JwtAuthenticationFilter(authenticationManager());
+    }
+
 
     //白名单,这里定义了无需认证即可访问的接口路径（白名单）。比如验证码接口、网站图标等。
     //注意：/login 不需要放在白名单中，因为 formLogin() 会自动处理 /login 请求
@@ -71,20 +82,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 //异常处理 - 配置认证异常和权限异常的处理
                 .and()
                 .exceptionHandling()
-                .authenticationEntryPoint((request, response, authException) -> {
-                    // 处理未认证的请求（返回JSON格式）
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write(JSONUtil.toJsonStr(Result.fail("未登录或登录已过期")));
-                })
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    // 处理权限不足的请求（返回JSON格式）
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    response.getWriter().write(JSONUtil.toJsonStr(Result.fail("权限不足")));
-                })
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
 
                 .and()
+                .addFilter(jwtAuthenticationFilter())
                 .addFilterBefore(captchaFilter, UsernamePasswordAuthenticationFilter.class)
         ;
 

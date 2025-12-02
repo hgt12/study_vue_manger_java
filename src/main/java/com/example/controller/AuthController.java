@@ -1,8 +1,8 @@
 package com.example.controller;
 
 import cn.hutool.core.map.MapUtil;
-import com.example.commom.lang.Const;
-import com.example.commom.lang.Result;
+import com.example.common.lang.Const;
+import com.example.common.lang.Result;
 import com.google.code.kaptcha.Producer;
 import com.example.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.UUID;
 
 @RestController

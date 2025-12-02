@@ -1,7 +1,7 @@
 package com.example.security;
 
 import cn.hutool.json.JSONUtil;
-import com.example.commom.lang.Result;
+import com.example.common.lang.Result;
 import com.example.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

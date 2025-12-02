@@ -1,6 +1,6 @@
-package com.example.commom.exception;
+package com.example.common.exception;
 
-import com.example.commom.lang.Result;
+import com.example.common.lang.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;

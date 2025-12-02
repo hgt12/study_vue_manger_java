@@ -1,4 +1,4 @@
-package com.example.commom.lang;
+package com.example.common.lang;
 
 import lombok.Data;
 

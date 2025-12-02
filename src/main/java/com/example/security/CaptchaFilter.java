@@ -1,8 +1,8 @@
 package com.example.security;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.example.commom.exception.CaptchaException;
-import com.example.commom.lang.Const;
+import com.example.common.exception.CaptchaException;
+import com.example.common.lang.Const;
 import com.example.util.RedisUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
