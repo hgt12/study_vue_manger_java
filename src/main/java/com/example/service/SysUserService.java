@@ -20,4 +20,6 @@ public interface SysUserService extends IService<SysUser> {
     void clearUserAuthorityInfo(String username);
     void clearUserAuthorityByRoleId(Long roleId);
     void clearUserAuthorityByMenuId(Long menuId);
+
+
 }
