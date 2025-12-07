@@ -1,6 +1,7 @@
 package com.example.security;
 
 import cn.hutool.json.JSONUtil;
+import com.example.common.exception.CaptchaException;
 import com.example.common.lang.Result;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -24,7 +25,16 @@ public class LoginFailureHandler implements AuthenticationFailureHandler
         System.out.println("执行了LoginFailureHandler中的onAuthenticationFailure方法......");
         httpServletResponse.setContentType("application/json;charset=UTF-8");
         ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-        Result result = Result.fail("用户名或密码错误");
+        
+        // 根据异常类型返回不同的错误信息
+        String errorMessage;
+        if (e instanceof CaptchaException) {
+            errorMessage = "验证码错误";
+        } else {
+            errorMessage = "用户名或密码错误";
+        }
+        
+        Result result = Result.fail(errorMessage);
         outputStream.write(JSONUtil.toJsonStr(result).getBytes("UTF-8"));
         outputStream.flush();
         outputStream.close();

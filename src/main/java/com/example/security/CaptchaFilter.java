@@ -38,6 +38,7 @@ public class CaptchaFilter extends OncePerRequestFilter
                 validate(httpServletRequest);
             }catch (CaptchaException e) {
                 loginFailureHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, e);
+                return; // 验证码验证失败时，直接返回，不继续执行后续过滤器
             }
         }
         filterChain.doFilter(httpServletRequest, httpServletResponse);
@@ -53,8 +54,19 @@ public class CaptchaFilter extends OncePerRequestFilter
             throw new CaptchaException("验证码错误");
         }
 
-        String redis_code = (String) redisUtil.hget(Const.CAPTCHA_KEY, key);
-        System.out.println("在Redis中提取出来的key为：" + redis_code);
+        // 先检查Redis中是否存在这个Hash key
+        boolean hashExists = redisUtil.hasKey(Const.CAPTCHA_KEY);
+        System.out.println("Redis中是否存在Hash Key '" + Const.CAPTCHA_KEY + "': " + hashExists);
+        
+        Object redis_code_obj = redisUtil.hget(Const.CAPTCHA_KEY, key);
+        System.out.println("在Redis中提取出来的对象类型为：" + (redis_code_obj != null ? redis_code_obj.getClass().getName() : "null"));
+        System.out.println("在Redis中提取出来的值为：" + redis_code_obj);
+        
+        if (redis_code_obj == null) {
+            throw new CaptchaException("验证码已过期或不存在，请重新获取验证码");
+        }
+        
+        String redis_code = redis_code_obj.toString();
         if (!code.equals(redis_code)){
             throw new CaptchaException("验证码错误");
         }

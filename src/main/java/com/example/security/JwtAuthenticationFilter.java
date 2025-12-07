@@ -1,8 +1,12 @@
 package com.example.security;
 
 import cn.hutool.core.util.StrUtil;
+import com.example.entity.SysUser;
+import com.example.service.SysUserService;
+import com.example.service.impl.UserDetailServiceImpl;
 import com.example.util.JwtUtils;
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +22,12 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends BasicAuthenticationFilter
 {
     private JwtUtils jwtUtils;
+
+    @Autowired
+    UserDetailServiceImpl userDetailsService;
+
+    @Autowired
+    SysUserService sysUserService;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtUtils jwtUtils) {
         super(authenticationManager);
@@ -57,8 +67,11 @@ public class JwtAuthenticationFilter extends BasicAuthenticationFilter
 
         // 将JWT里的用户名 转换成 Spring Security能识别的通行证
         String username = claims.getSubject();
+
+        SysUser sysUser = sysUserService.getByUserName(username);
+
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(username, null, null);
+                new UsernamePasswordAuthenticationToken(username, null, userDetailsService.getUserAuthority(sysUser.getId()));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         chain.doFilter(request, response);
     }

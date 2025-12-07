@@ -25,7 +25,8 @@ public class RedisConfig {
 		redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
 
 		redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-		redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
+		// Hash的value使用String序列化，因为验证码等简单字符串不需要JSON序列化
+		redisTemplate.setHashValueSerializer(new StringRedisSerializer());
 
 		return redisTemplate;
 

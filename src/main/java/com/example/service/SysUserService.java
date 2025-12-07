@@ -14,4 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface SysUserService extends IService<SysUser> {
 
     SysUser getByUserName(String userName);
+
+    String getUserAuthorityInfo(Long userId);//通过userId查询用户权限
 }
