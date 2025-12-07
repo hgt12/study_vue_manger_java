@@ -53,8 +53,9 @@ public class CaptchaFilter extends OncePerRequestFilter
             throw new CaptchaException("验证码错误");
         }
 
-        if (!code.equals(redisUtil.hget(Const.CAPTCHA_KEY,key))){
-            System.out.println("Redis中的key为：" + redisUtil.hget(Const.CAPTCHA_KEY,key));
+        String redis_code = (String) redisUtil.hget(Const.CAPTCHA_KEY, key);
+        System.out.println("在Redis中提取出来的key为：" + redis_code);
+        if (!code.equals(redis_code)){
             throw new CaptchaException("验证码错误");
         }
         redisUtil.hdel(Const.CAPTCHA_KEY,key);

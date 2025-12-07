@@ -1,8 +1,7 @@
 package com.example.config;
 
-import cn.hutool.json.JSONUtil;
-import com.example.common.lang.Result;
 import com.example.security.*;
+import com.example.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +11,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import javax.servlet.http.HttpServletResponse;
 
 //该类的作用
 //启用 Spring Security。
@@ -42,11 +41,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        return new JwtAuthenticationFilter(authenticationManager());
+        return new JwtAuthenticationFilter(authenticationManager(), jwtUtils);
     }
 
+    @Bean
+    BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Autowired
+    UserDetailsService userDetailsService;
 
     //白名单,这里定义了无需认证即可访问的接口路径（白名单）。比如验证码接口、网站图标等。
     //注意：/login 不需要放在白名单中，因为 formLogin() 会自动处理 /login 请求
@@ -86,7 +95,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .accessDeniedHandler(jwtAccessDeniedHandler)
 
                 .and()
-                .addFilter(jwtAuthenticationFilter())
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(captchaFilter, UsernamePasswordAuthenticationFilter.class)
         ;
 
@@ -96,10 +105,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception
     {
-        auth.inMemoryAuthentication()
-                .withUser("root")
-                .password("{noop}admin")
-                .roles("ADMIN");
-                //{noop}表示明文密码
+//        auth.inMemoryAuthentication()
+//                .withUser("root")
+//                .password("{noop}admin")
+//                .roles("ADMIN");
+//                //{noop}表示明文密码
+
+        auth.userDetailsService(userDetailsService)
+                .passwordEncoder(bCryptPasswordEncoder());
     }
 }
