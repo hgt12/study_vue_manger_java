@@ -57,6 +57,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     @Autowired
     UserDetailsService userDetailsService;
 
+    @Autowired
+    JwtLogoutSuccessHandler jwtLogoutSuccessHandler;
+
     //白名单,这里定义了无需认证即可访问的接口路径（白名单）。比如验证码接口、网站图标等。
     //注意：/login 不需要放在白名单中，因为 formLogin() 会自动处理 /login 请求
     private static final String[] AUTH_WHITELIST = {
@@ -74,6 +77,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .loginProcessingUrl("/login")  // 明确指定登录处理URL
                 .successHandler(loginSuccessHandler)
                 .failureHandler(loginFailureHandler)
+
+                //退出配置
+                .and()
+                .logout()
+                .logoutSuccessHandler(jwtLogoutSuccessHandler)
 
                 //禁用session
                 .and()

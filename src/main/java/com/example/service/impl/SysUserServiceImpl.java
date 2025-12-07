@@ -47,34 +47,67 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
-    public String getUserAuthorityInfo(Long userId) {
+    public String getUserAuthorityInfo(Long userId)
+    {
+        SysUser sysUser = sysUserMapper.selectById(userId);
 
         String authority = "";
-        //获取角色信息
-        List<SysRole> roles = sysRoleService.list(new QueryWrapper<SysRole>()
-                .inSql("id", "select role_id from sys_user_role where user_id = " + userId));
 
-        if (roles != null && roles.size() > 0) {
-            String roleCode = roles.stream().map(r -> "ROLE_" + r.getCode())
-                    .collect(Collectors.joining(","));
-            authority = roleCode.concat(",");
-        }
-        //获取菜单权限操作
-        List<Long> menuId = sysUserMapper.getNavMenuIds(userId);
-        if (menuId != null && menuId.size() > 0) {
-            List<SysMenu> menus = sysMenuService.listByIds(menuId);
-            // 获取所有菜单的权限（perms字段），每个菜单的perms可能包含多个权限（逗号分隔）
-            String menuPersms = menus.stream()
-                    .map(SysMenu::getPerms)
-                    .filter(perms -> perms != null && !perms.trim().isEmpty())
-                    .collect(Collectors.joining(","));
-            if (!menuPersms.isEmpty()) {
-                if (!authority.isEmpty() && !authority.endsWith(",")) {
-                    authority = authority.concat(",");
-                }
-                authority = authority.concat(menuPersms);
+        if (redisUtil.hasKey("GranteAuthority:" + sysUser.getUsername())) {
+            authority = (String) redisUtil.get("GranteAuthority:" + sysUser.getUsername());
+        }else {
+            //获取角色信息
+            List<SysRole> roles = sysRoleService.list(new QueryWrapper<SysRole>()
+                    .inSql("id", "select role_id from sys_user_role where user_id = " + userId));
+
+            if (roles != null && roles.size() > 0) {
+                String roleCode = roles.stream().map(r -> "ROLE_" + r.getCode())
+                        .collect(Collectors.joining(","));
+                authority = roleCode.concat(",");
             }
+            //获取菜单权限操作
+            List<Long> menuId = sysUserMapper.getNavMenuIds(userId);
+            if (menuId != null && menuId.size() > 0) {
+                List<SysMenu> menus = sysMenuService.listByIds(menuId);
+                // 获取所有菜单的权限（perms字段），每个菜单的perms可能包含多个权限（逗号分隔）
+                String menuPersms = menus.stream()
+                        .map(SysMenu::getPerms)
+                        .filter(perms -> perms != null && !perms.trim().isEmpty())
+                        .collect(Collectors.joining(","));
+                if (!menuPersms.isEmpty()) {
+                    if (!authority.isEmpty() && !authority.endsWith(",")) {
+                        authority = authority.concat(",");
+                    }
+                    authority = authority.concat(menuPersms);
+                }
+            }
+            redisUtil.set("GranteAuthority:" + sysUser.getUsername(), authority,60*60);
         }
+
         return authority;
+    }
+
+    @Override
+    public void clearUserAuthorityInfo(String username) {
+        redisUtil.del("GranteAuthority:" + username);
+    }
+
+    @Override
+    public void clearUserAuthorityByRoleId(Long roleId) {
+        List<SysUser> sysUsers = this.list(new QueryWrapper<SysUser>()
+                .inSql("id","select user_id from sys_user_role where role_id = " + roleId));
+
+        sysUsers.forEach(user -> {
+            this.clearUserAuthorityInfo(user.getUsername());
+        });
+    }
+
+    @Override
+    public void clearUserAuthorityByMenuId(Long menuId) {
+        List<SysUser> sysUsers = sysUserMapper.listByMenuId(menuId);
+
+        sysUsers.forEach(user -> {
+            this.clearUserAuthorityInfo(user.getUsername());
+        });
     }
 }

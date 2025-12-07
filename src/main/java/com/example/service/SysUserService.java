@@ -16,4 +16,8 @@ public interface SysUserService extends IService<SysUser> {
     SysUser getByUserName(String userName);
 
     String getUserAuthorityInfo(Long userId);//通过userId查询用户权限
+
+    void clearUserAuthorityInfo(String username);
+    void clearUserAuthorityByRoleId(Long roleId);
+    void clearUserAuthorityByMenuId(Long menuId);
 }
