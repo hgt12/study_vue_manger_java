@@ -11,6 +11,8 @@ public class BaseEntity
 {
     @TableId(value = "id" ,type = IdType.AUTO)
     private Long id;
+
+    private LocalDateTime created;
     private LocalDateTime updated;
     private Integer statu;
 }
