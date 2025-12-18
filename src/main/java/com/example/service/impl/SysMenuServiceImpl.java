@@ -1,6 +1,7 @@
 package com.example.service.impl;
 
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.common.dto.SysMenuDto;
 import com.example.entity.SysMenu;
 import com.example.entity.SysUser;
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -82,5 +84,15 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         });
         return menuDtos;
     }
+
+    //查询所有菜单数据接口实现
+    @Override
+    public List<SysMenu> tree() {
+        //获取全部菜单信息
+        List<SysMenu> menus = this.list(new QueryWrapper<SysMenu>().orderByDesc("orderNum"));
+        //转换成树状接口
+        return buildTreeMenu(menus);
+    }
+
 
 }

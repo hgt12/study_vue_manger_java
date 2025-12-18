@@ -12,5 +12,4 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2025-11-20
  */
 public interface SysMenuMapper extends BaseMapper<SysMenu> {
-
 }
