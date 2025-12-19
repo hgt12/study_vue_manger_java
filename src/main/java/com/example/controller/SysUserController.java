@@ -4,6 +4,7 @@ package com.example.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.common.dto.PassDto;
 import com.example.common.lang.Const;
 import com.example.common.lang.Result;
 import com.example.entity.SysRole;
@@ -18,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.sound.sampled.Control;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -143,5 +145,22 @@ public class SysUserController extends BaseController {
         return Result.succ("");
     }
 
+    //更新密码功能
+    @PostMapping("/updatePass")
+    public Result updatePass(@Validated @RequestBody PassDto passDto, Principal principal)
+    {
+        SysUser sysUser = sysUserService.getByUserName(principal.getName());
+
+        boolean matches = passwordEncoder.matches(passDto.getCurrentPass(), sysUser.getPassword());
+        if (!matches){
+            return Result.fail("旧密码不正确");
+        }
+
+        sysUser.setPassword(passwordEncoder.encode(passDto.getPassword()));
+        sysUser.setUpdated(LocalDateTime.now());
+
+        sysUserService.updateById(sysUser);
+        return Result.succ("");
+    }
 
 }
