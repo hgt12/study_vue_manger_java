@@ -33,10 +33,6 @@ public class AuthController extends BaseController{
         String key = UUID.randomUUID().toString();
         String  code = producer.createText();
 
-        //测试
-        key = "abcd";
-        code = "12345";
-
         System.out.println("/captcha");
         BufferedImage image = producer.createImage(code);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

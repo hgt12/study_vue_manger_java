@@ -3,7 +3,9 @@ package com.example.security;
 import cn.hutool.json.JSONUtil;
 import com.example.common.exception.CaptchaException;
 import com.example.common.lang.Result;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
@@ -29,9 +31,11 @@ public class LoginFailureHandler implements AuthenticationFailureHandler
         // 根据异常类型返回不同的错误信息
         String errorMessage;
         if (e instanceof CaptchaException) {
-            errorMessage = "验证码错误";
-        } else {
+            errorMessage = e.getMessage();
+        } else if (e instanceof BadCredentialsException || e instanceof UsernameNotFoundException) {
             errorMessage = "用户名或密码错误";
+        } else {
+            errorMessage = "登录失败：" + e.getMessage();
         }
         
         Result result = Result.fail(errorMessage);
